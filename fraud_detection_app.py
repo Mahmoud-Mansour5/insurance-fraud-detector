@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import LabelEncoder
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -45,7 +44,7 @@ st.markdown('<div class="main-header">🔍 Insurance Fraud Detection System</div
 
 # Sidebar
 st.sidebar.markdown("## Navigation")
-option = st.sidebar.radio("Choose an option:", [ "Test from Dataset","Manual Input"])
+option = st.sidebar.radio("Choose an option:", ["Test from Dataset", "Manual Input"])
 
 # ------- OPTION 1: MANUAL INPUT -------
 if option == "Manual Input":
@@ -155,13 +154,12 @@ if option == "Manual Input":
 elif option == "Test from Dataset":
     st.markdown('<div class="sub-header">📊 Test with Dataset Samples</div>', unsafe_allow_html=True)
     
-    # Load dataset
     try:
         df = pd.read_csv('fraud_oracle.csv')
         
         col1, col2 = st.columns(2)
-    
-    with col1:
+        
+        with col1:
             st.write(f"**Total Records in Dataset:** {len(df)}")
             st.write(f"**Fraud Cases:** {df['FraudFound_P'].sum()}")
             st.write(f"**Non-Fraud Cases:** {len(df) - df['FraudFound_P'].sum()}")
@@ -197,9 +195,6 @@ elif option == "Test from Dataset":
             
             if sample is not None:
                 st.markdown("#### Selected Record Details:")
-                
-                # Display in columns
-                col1, col2, col3 = st.columns(3)
                 
                 sample_dict = sample.to_dict(orient='records')[0]
                 
