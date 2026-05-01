@@ -155,28 +155,76 @@ if option == "Manual Input":
 elif option == "Test from Dataset":
     st.markdown('<div class="sub-header">📊 Test with Dataset Samples</div>', unsafe_allow_html=True)
     
-    st.info("📌 Please upload the fraud_oracle.csv file to use this feature, or connect to a data source.")
-    
-    st.markdown("""
-    ### Dataset Information
-    - **Total Records:** 15,420
-    - **Fraud Cases:** ~923 (5.99%)
-    - **Non-Fraud Cases:** ~14,497 (94.01%)
-    - **Features:** 33 columns
-    """)
-    
-    col1, col2 = st.columns(2)
+    # Load dataset
+    try:
+        df = pd.read_csv('fraud_oracle.csv')
+        
+        col1, col2 = st.columns(2)
     
     with col1:
-        st.metric("Total Records", "15,420")
-        st.metric("Fraud Cases", "923")
+            st.write(f"**Total Records in Dataset:** {len(df)}")
+            st.write(f"**Fraud Cases:** {df['FraudFound_P'].sum()}")
+            st.write(f"**Non-Fraud Cases:** {len(df) - df['FraudFound_P'].sum()}")
+        
+        with col2:
+            fraud_percentage = (df['FraudFound_P'].sum() / len(df)) * 100
+            st.write(f"**Fraud Percentage:** {fraud_percentage:.2f}%")
+            st.write(f"**Non-Fraud Percentage:** {100 - fraud_percentage:.2f}%")
+        
+        st.markdown("---")
+        
+        # Choose record type
+        record_type = st.radio("Select Record Type:", 
+                              ["Random Record", "Fraud Record", "Non-Fraud Record"])
+        
+        if st.button("🎲 Load Sample Record", use_container_width=True):
+            if record_type == "Random Record":
+                sample = df.sample(1)
+            elif record_type == "Fraud Record":
+                fraud_df = df[df['FraudFound_P'] == 1]
+                if len(fraud_df) > 0:
+                    sample = fraud_df.sample(1)
+                else:
+                    st.error("No fraud records found!")
+                    sample = None
+            else:  # Non-Fraud Record
+                non_fraud_df = df[df['FraudFound_P'] == 0]
+                if len(non_fraud_df) > 0:
+                    sample = non_fraud_df.sample(1)
+                else:
+                    st.error("No non-fraud records found!")
+                    sample = None
+            
+            if sample is not None:
+                st.markdown("#### Selected Record Details:")
+                
+                # Display in columns
+                col1, col2, col3 = st.columns(3)
+                
+                sample_dict = sample.to_dict(orient='records')[0]
+                
+                display_data = pd.DataFrame(list(sample_dict.items()), 
+                                          columns=['Feature', 'Value'])
+                
+                st.dataframe(display_data, use_container_width=True, hide_index=True)
+                
+                # Show actual label
+                actual_label = sample['FraudFound_P'].values[0]
+                st.markdown("---")
+                
+                if actual_label == 1:
+                    st.markdown('<div class="prediction-box fraud-box"><h3>🚨 Actual Label: FRAUD</h3></div>', 
+                               unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="prediction-box safe-box"><h3>✅ Actual Label: NOT FRAUD</h3></div>', 
+                               unsafe_allow_html=True)
+                
+                # Predict button
+                if st.button("🔮 Predict This Record", use_container_width=True):
+                    st.info("⚠️ Model prediction will be available once you train the model in the notebook")
     
-    with col2:
-        st.metric("Non-Fraud Cases", "14,497")
-        st.metric("Fraud Percentage", "5.99%")
-    
-    st.markdown("---")
-    st.write("Use the Manual Input option above to test the model with custom data.")
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
 
 # Footer
 st.markdown("---")
