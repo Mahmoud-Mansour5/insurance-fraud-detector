@@ -27,6 +27,8 @@ st.markdown("""
         padding: 20px;
         border-radius: 10px;
         margin: 20px 0;
+        color: #333;
+
     }
     .fraud-box {
         background-color: #FFE5E5;
